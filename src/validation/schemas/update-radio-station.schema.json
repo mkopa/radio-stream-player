@@ -1,0 +1,106 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Update Radio Station Schema",
+  "description": "Schema for validating radio station update data",
+  "type": "object",
+  "properties": {
+    "changeuuid": {
+      "type": "string",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "serveruuid": {
+      "type": "string",
+      "minLength": 36,
+      "maxLength": 36
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "url": {
+      "type": "string",
+      "minLength": 1
+    },
+    "url_resolved": {
+      "type": "string"
+    },
+    "homepage": {
+      "type": "string"
+    },
+    "favicon": {
+      "type": "string"
+    },
+    "country": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "countrycode": {
+      "type": "string",
+      "maxLength": 2
+    },
+    "iso_3166_2": {
+      "type": "string",
+      "maxLength": 20
+    },
+    "state": {
+      "type": "string",
+      "maxLength": 255
+    },
+    "geo_lat": {
+      "type": "number",
+      "minimum": -90,
+      "maximum": 90
+    },
+    "geo_long": {
+      "type": "number",
+      "minimum": -180,
+      "maximum": 180
+    },
+    "language": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "languagecodes": {
+      "type": "string",
+      "maxLength": 500
+    },
+    "tags": {
+      "type": "string"
+    },
+    "codec": {
+      "type": "string",
+      "maxLength": 50
+    },
+    "bitrate": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "hls": {
+      "type": "boolean"
+    },
+    "ssl_error": {
+      "type": "boolean"
+    },
+    "votes": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "clickcount": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "clicktrend": {
+      "type": "integer"
+    },
+    "lastcheckok": {
+      "type": "boolean"
+    },
+    "has_extended_info": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false,
+  "minProperties": 1
+}

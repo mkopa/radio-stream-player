@@ -5,11 +5,14 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import { internalRouter } from './routes/internal';
 import { healthRouter } from './routes/health';
+import { authRouter } from './routes/auth';
+import { stationsRouter } from './routes/stations';
 import { basicAuth } from './middlewares/basicAuth';
 import { errorHandler } from './middlewares/errorHandler';
 import { rateLimiter } from './middlewares/rateLimiter';
 import { sanitizeInput } from './middlewares/sanitizeInput';
 import logger from '../utils/logger';
+import { jwtAuth } from './middlewares/jwtAuth';
 
 const corsOptions: cors.CorsOptions = {
   origin: (origin, callback) => {
@@ -48,8 +51,16 @@ export function createApp(): Application {
   // ==========================================
 
   const API_VERSION = '/api/v1';
+  
+  // Public routes
   app.use(`${API_VERSION}/health`, healthRouter());
+  app.use(`${API_VERSION}`, authRouter());
+  
+  // Protected routes (Basic Auth)
   app.use(`${API_VERSION}/internal`, basicAuth, rateLimiter, internalRouter());
+  
+  // Protected routes (JWT Auth)
+  app.use(`${API_VERSION}/stations`, jwtAuth, rateLimiter, stationsRouter());
 
   // ==========================================
   // Error Handlers
@@ -63,7 +74,7 @@ export function createApp(): Application {
       timestamp: new Date().toISOString(),
     });
   });
-
+  
   app.use(errorHandler);
 
   logger.info('✅ Express application configured');

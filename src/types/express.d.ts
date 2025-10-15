@@ -1,10 +1,15 @@
-declare namespace Express {
-  export interface Request {
-    id?: string;
-    user?: {
-      id: number;
-      email: string;
-      role: string;
-    };
+import { JwtPayload } from './dtos/auth.dto';
+
+declare global {
+  namespace Express {
+    interface Request {
+      id?: string;
+      user?: {
+        userId: number;
+        email: string;
+      };
+    }
   }
 }
+
+export {};

@@ -1,143 +1,163 @@
 /**
- * Base class for all domain errors
- * Extends Error with HTTP status code
+ * Domain-specific errors with HTTP status codes
+ * Used for business logic error handling
  */
-export abstract class DomainError extends Error {
-  abstract readonly statusCode: number;
-  abstract readonly errorCode: string;
 
-  constructor(message: string) {
-    super(message);
-    this.name = this.constructor.name;
-    Error.captureStackTrace(this, this.constructor);
-  }
+export interface DomainError extends Error {
+  statusCode: number;
+  errorCode: string;
 }
 
-/**
- * User-related errors
- */
-export class UserAlreadyExistsError extends DomainError {
-  readonly statusCode = 409;
-  readonly errorCode = 'USER_ALREADY_EXISTS';
+export function isDomainError(error: unknown): error is DomainError {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'statusCode' in error &&
+    'errorCode' in error &&
+    'message' in error
+  );
+}
+
+// ==========================================
+// User Errors
+// ==========================================
+
+export class UserAlreadyExistsError extends Error implements DomainError {
+  statusCode = 409;
+  errorCode = 'USER_ALREADY_EXISTS';
 
   constructor(email: string) {
     super(`User with email ${email} already exists`);
+    this.name = 'UserAlreadyExistsError';
   }
 }
 
-export class UserNotFoundError extends DomainError {
-  readonly statusCode = 404;
-  readonly errorCode = 'USER_NOT_FOUND';
+export class UserNotFoundError extends Error implements DomainError {
+  statusCode = 404;
+  errorCode = 'USER_NOT_FOUND';
 
-  constructor(userId?: number) {
-    super(userId ? `User with id ${userId} not found` : 'User not found');
+  constructor(identifier: string | number) {
+    super(`User with identifier ${identifier} not found`);
+    this.name = 'UserNotFoundError';
   }
 }
 
-/**
- * Company-related errors
- */
-export class CompanyNotFoundError extends DomainError {
-  readonly statusCode = 404;
-  readonly errorCode = 'COMPANY_NOT_FOUND';
+export class InvalidCredentialsError extends Error implements DomainError {
+  statusCode = 401;
+  errorCode = 'INVALID_CREDENTIALS';
+
+  constructor() {
+    super('Invalid email or password');
+    this.name = 'InvalidCredentialsError';
+  }
+}
+
+export class AccountNotActivatedError extends Error implements DomainError {
+  statusCode = 403;
+  errorCode = 'ACCOUNT_NOT_ACTIVATED';
+
+  constructor() {
+    super('Account is not activated. Please set your password first.');
+    this.name = 'AccountNotActivatedError';
+  }
+}
+
+// ==========================================
+// Company Errors
+// ==========================================
+
+export class CompanyNotFoundError extends Error implements DomainError {
+  statusCode = 404;
+  errorCode = 'COMPANY_NOT_FOUND';
 
   constructor(companyId: number) {
-    super(`Company with id ${companyId} does not exist`);
+    super(`Company with ID ${companyId} not found`);
+    this.name = 'CompanyNotFoundError';
   }
 }
 
-/**
- * Token-related errors
- */
-export class InvalidTokenError extends DomainError {
-  readonly statusCode = 404;
-  readonly errorCode = 'INVALID_TOKEN';
+// ==========================================
+// Token Errors
+// ==========================================
 
-  constructor(message: string = 'Invalid or expired token') {
-    super(message);
-  }
-}
-
-export class TokenExpiredError extends DomainError {
-  readonly statusCode = 410;
-  readonly errorCode = 'TOKEN_EXPIRED';
+export class InvalidTokenError extends Error implements DomainError {
+  statusCode = 404;
+  errorCode = 'INVALID_TOKEN';
 
   constructor() {
-    super('Password reset token has expired');
+    super('Invalid or already used token');
+    this.name = 'InvalidTokenError';
   }
 }
 
-export class TokenAlreadyUsedError extends DomainError {
-  readonly statusCode = 410;
-  readonly errorCode = 'TOKEN_ALREADY_USED';
+export class TokenExpiredError extends Error implements DomainError {
+  statusCode = 410;
+  errorCode = 'TOKEN_EXPIRED';
 
   constructor() {
-    super('This password reset token has already been used');
+    super('Token has expired');
+    this.name = 'TokenExpiredError';
   }
 }
 
-/**
- * Validation errors
- */
-export class ValidationError extends DomainError {
-  readonly statusCode = 400;
-  readonly errorCode = 'VALIDATION_ERROR';
+// ==========================================
+// Password Errors
+// ==========================================
 
-  constructor(message: string) {
+export class WeakPasswordError extends Error implements DomainError {
+  statusCode = 400;
+  errorCode = 'WEAK_PASSWORD';
+
+  constructor(details: string) {
+    super(`Password does not meet requirements: ${details}`);
+    this.name = 'WeakPasswordError';
+  }
+}
+
+// ==========================================
+// Radio Station Errors
+// ==========================================
+
+export class RadioStationNotFoundError extends Error implements DomainError {
+  statusCode = 404;
+  errorCode = 'RADIO_STATION_NOT_FOUND';
+
+  constructor(identifier: string | number) {
+    super(`Radio station with identifier ${identifier} not found`);
+    this.name = 'RadioStationNotFoundError';
+  }
+}
+
+export class RadioStationAlreadyExistsError extends Error implements DomainError {
+  statusCode = 409;
+  errorCode = 'RADIO_STATION_ALREADY_EXISTS';
+
+  constructor(stationuuid: string) {
+    super(`Radio station with UUID ${stationuuid} already exists`);
+    this.name = 'RadioStationAlreadyExistsError';
+  }
+}
+
+// ==========================================
+// Authentication Errors
+// ==========================================
+
+export class UnauthorizedError extends Error implements DomainError {
+  statusCode = 401;
+  errorCode = 'UNAUTHORIZED';
+
+  constructor(message = 'Unauthorized access') {
     super(message);
+    this.name = 'UnauthorizedError';
   }
 }
 
-// WeakPasswordError extends DomainError directly instead of ValidationError
-// This fixes the errorCode conflict
-export class WeakPasswordError extends DomainError {
-  readonly statusCode = 400;
-  readonly errorCode = 'WEAK_PASSWORD';
+export class ForbiddenError extends Error implements DomainError {
+  statusCode = 403;
+  errorCode = 'FORBIDDEN';
 
-  constructor(message: string = 'Password does not meet security requirements') {
+  constructor(message = 'Access forbidden') {
     super(message);
+    this.name = 'ForbiddenError';
   }
-}
-
-/**
- * Business logic errors
- */
-export class BusinessRuleViolationError extends DomainError {
-  readonly statusCode = 422;
-  readonly errorCode = 'BUSINESS_RULE_VIOLATION';
-
-  constructor(message: string) {
-    super(message);
-  }
-}
-
-/**
- * Database errors
- */
-export class DatabaseError extends DomainError {
-  readonly statusCode = 500;
-  readonly errorCode = 'DATABASE_ERROR';
-
-  constructor(message: string = 'Database operation failed') {
-    super(message);
-  }
-}
-
-/**
- * Transaction errors
- */
-export class TransactionError extends DomainError {
-  readonly statusCode = 500;
-  readonly errorCode = 'TRANSACTION_ERROR';
-
-  constructor(message: string = 'Transaction failed') {
-    super(message);
-  }
-}
-
-/**
- * Type guard to check if error is a domain error
- */
-export function isDomainError(error: unknown): error is DomainError {
-  return error instanceof DomainError;
 }
